@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoBite - AI Zero-Waste Kitchen Assistant</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome icons via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom transitions */
+        .transition-all {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Ambient gradient background */
+        body {
+            background: radial-gradient(ellipse at top, #ecfdf5 0%, #f0fdf4 50%, #f9fafb 100%);
+            min-height: 100vh;
+        }
+        
+        /* Glass card effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        /* Hover animations */
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Canvas styling */
+        #platingCanvas {
+            border-radius: 1rem;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Top Navigation Bar -->
+    <nav class="glass-card shadow-lg sticky top-0 z-50 border-b border-emerald-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-18 py-2">
+                <!-- Left side: Logo and Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-emerald-600 p-2.5 rounded-xl shadow-md">
+                        <i class="fas fa-seedling text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold text-slate-800">EcoBite - AI Zero-Waste Kitchen Assistant</h1>
+                    </div>
+                </div>
+                
+                <!-- Right side: SDG Badge -->
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 sm:px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-xs sm:text-sm font-semibold shadow-sm border border-emerald-200">
+                        <i class="fas fa-globe-americas mr-2"></i>
+                        <span class="hidden sm:inline">SDG 12: Responsible Consumption</span>
+                        <span class="sm:hidden">SDG 12</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Impact Stats Dashboard -->
+        <section class="mb-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-5 flex items-center">
+                <i class="fas fa-chart-line text-emerald-600 mr-3"></i>
+                Impact Stats Dashboard
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                <!-- Food Rescued Card -->
+                <div class="glass-card rounded-2xl shadow-lg p-6 border border-gray-100 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-slate-600 mb-1">Food Rescued</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-emerald-600" id="foodRescued">0.0 kg</p>
+                        </div>
+                        <div class="bg-emerald-100 p-3 rounded-xl">
+                            <i class="fas fa-apple-alt text-emerald-600 text-xl lg:text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CO2 Avoided Card -->
+                <div class="glass-card rounded-2xl shadow-lg p-6 border border-gray-100 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-slate-600 mb-1">CO2 Avoided</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-emerald-600" id="co2Avoided">0.0 kg CO2e</p>
+                        </div>
+                        <div class="bg-emerald-100 p-3 rounded-xl">
+                            <i class="fas fa-leaf text-emerald-600 text-xl lg:text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Money Saved Card -->
+                <div class="glass-card rounded-2xl shadow-lg p-6 border border-gray-100 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-slate-600 mb-1">Money Saved</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-emerald-600" id="moneySaved">$0.00</p>
+                        </div>
+                        <div class="bg-emerald-100 p-3 rounded-xl">
+                            <i class="fas fa-dollar-sign text-emerald-600 text-xl lg:text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Water Saved Card -->
+                <div class="glass-card rounded-2xl shadow-lg p-6 border border-gray-100 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm font-medium text-slate-600 mb-1">Water Saved</p>
+                            <p class="text-2xl lg:text-3xl font-bold text-emerald-600" id="waterSaved">0 L</p>
+                        </div>
+                        <div class="bg-emerald-100 p-3 rounded-xl">
+                            <i class="fas fa-tint text-emerald-600 text-xl lg:text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Input Form Card -->
+        <section class="mb-8">
+            <div class="glass-card rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100 hover-lift">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2 flex items-center">
+                        <i class="fas fa-refrigerator text-emerald-600 mr-3"></i>
+                        What's in your fridge?
+                    </h2>
+                    <p class="text-slate-600">Transform your expiring ingredients into delicious, zero-waste recipes with the power of AI.</p>
+                </div>
+                
+                <!-- Ingredients Textarea -->
+                <div class="mb-6">
+                    <label for="ingredientsInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                        Ingredients List
+                    </label>
+                    <textarea 
+                        id="ingredientsInput" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all resize-none text-slate-700 shadow-sm"
+                        rows="4"
+                        placeholder="e.g., 2 slices of bread, 3 eggs, a handful of spinach, leftover chicken, wilted tomatoes..."
+                    ></textarea>
+                </div>
+                
+                <!-- Quick Demo Presets -->
+                <div class="mb-6">
+                    <p class="text-sm font-semibold text-slate-700 mb-3 flex items-center">
+                        <i class="fas fa-bolt text-amber-500 mr-2"></i>
+                        Quick Demo Presets
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <button 
+                            onclick="fillPreset('Bread, Eggs & Cheese')"
+                            class="px-4 py-2 bg-amber-50 text-amber-700 rounded-full hover:bg-amber-100 border border-amber-200 transition-all text-sm font-medium shadow-sm hover:shadow"
+                        >
+                            🍞 Bread, Eggs & Cheese
+                        </button>
+                        <button 
+                            onclick="fillPreset('Rice, Peas & Sauce')"
+                            class="px-4 py-2 bg-amber-50 text-amber-700 rounded-full hover:bg-amber-100 border border-amber-200 transition-all text-sm font-medium shadow-sm hover:shadow"
+                        >
+                            🍚 Rice, Peas & Sauce
+                        </button>
+                        <button 
+                            onclick="fillPreset('Bananas & Oats')"
+                            class="px-4 py-2 bg-amber-50 text-amber-700 rounded-full hover:bg-amber-100 border border-amber-200 transition-all text-sm font-medium shadow-sm hover:shadow"
+                        >
+                            🍌 Bananas & Oats
+                        </button>
+                        <button 
+                            onclick="fillPreset('Wilting Veggie Medley')"
+                            class="px-4 py-2 bg-amber-50 text-amber-700 rounded-full hover:bg-amber-100 border border-amber-200 transition-all text-sm font-medium shadow-sm hover:shadow"
+                        >
+                            🥗 Wilting Veggie Medley
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="dietaryPref" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Dietary Preferences
+                        </label>
+                        <select 
+                            id="dietaryPref" 
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 shadow-sm bg-white"
+                        >
+                            <option value="Standard">Standard</option>
+                            <option value="Vegetarian">Vegetarian</option>
+                            <option value="Vegan">Vegan</option>
+                            <option value="Low-Carb">Low-Carb</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="expirationUrgency" class="block text-sm font-semibold text-slate-700 mb-2">
+                            Expiration Urgency
+                        </label>
+                        <select 
+                            id="expirationUrgency" 
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all text-slate-700 shadow-sm bg-white"
+                        >
+                            <option value="Use Soon">Use Soon</option>
+                            <option value="Very Urgent">Very Urgent</option>
+                            <option value="Flexible">Flexible</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Generate Button -->
+                <button 
+                    id="generateBtn"
+                    onclick="generateRecipe()"
+                    class="w-full md:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 active:from-emerald-800 active:to-emerald-900 transition-all font-semibold text-lg shadow-lg hover:shadow-xl flex items-center justify-center space-x-3"
+                >
+                    <i class="fas fa-magic"></i>
+                    <span id="btnText">Generate AI Zero-Waste Recipe</span>
+                    <i class="fas fa-spinner fa-spin hidden" id="btnSpinner"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Recipe Output Card (Initially Hidden) -->
+        <section id="recipeOutput" class="hidden">
+            <div class="glass-card rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover-lift">
+                <!-- Recipe Header -->
+                <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 md:p-8 text-white">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2 mb-3">
+                                <span class="inline-flex items-center px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-semibold" id="urgencyBadge">
+                                    <i class="fas fa-exclamation-circle mr-1.5"></i>
+                                    <span>Use Soon</span>
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-semibold">
+                                    <i class="fas fa-clock mr-1.5"></i>
+                                    <span id="recipeTime">15 Mins</span>
+                                </span>
+                            </div>
+                            <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold" id="recipeTitle">Artisanal Skillet Toast</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recipe Content -->
+                <div class="p-6 md:p-8">
+                    <!-- Macro Nutrition Estimate Bar -->
+                    <div class="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-100">
+                        <p class="text-sm font-semibold text-emerald-800 mb-2 flex items-center">
+                            <i class="fas fa-chart-pie mr-2"></i>
+                            Macro-Nutrition Estimate
+                        </p>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                            <div>
+                                <p class="text-xs text-slate-600">Calories</p>
+                                <p class="text-lg font-bold text-emerald-700" id="calories">320 kcal</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-600">Protein</p>
+                                <p class="text-lg font-bold text-emerald-700" id="protein">18g</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-600">Carbs</p>
+                                <p class="text-lg font-bold text-emerald-700" id="carbs">24g</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-600">Healthy Fats</p>
+                                <p class="text-lg font-bold text-emerald-700" id="fats">16g</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Grid: Canvas + Ingredients/Method -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <!-- Column A: Canvas + Storage Tip -->
+                        <div class="space-y-6">
+                            <!-- Generative 2D Canvas Plating Visualizer -->
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
+                                    <i class="fas fa-palette text-emerald-600 mr-2"></i>
+                                    Plating Visualizer
+                                </h3>
+                                <canvas 
+                                    id="platingCanvas" 
+                                    width="400" 
+                                    height="300" 
+                                    class="w-full h-64 md:h-72 lg:h-80"
+                                ></canvas>
+                            </div>
+                            
+                            <!-- Smart Storage & Shelf-Life Tip -->
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
+                                    <i class="fas fa-lightbulb text-amber-500 mr-2"></i>
+                                    Smart Storage & Shelf-Life Tip
+                                </h3>
+                                <div class="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+                                    <p class="text-amber-800 text-sm leading-relaxed" id="storageTip">
+                                        Store leftovers in airtight containers in the refrigerator for up to 3-4 days. For optimal freshness, consume within 48 hours.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Column B: Ingredients & Method -->
+                        <div class="space-y-6">
+                            <!-- Verified Ingredients & Capped Quantities -->
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
+                                    <i class="fas fa-list-check text-emerald-600 mr-2"></i>
+                                    Verified Ingredients & Capped Quantities
+                                </h3>
+                                <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                    <ul class="space-y-2.5" id="ingredientsList">
+                                        <!-- Populated by JavaScript -->
+                                    </ul>
+                                    <div class="mt-4 pt-4 border-t border-gray-300">
+                                        <p class="text-xs font-semibold text-slate-600 mb-2">Pantry Safety Limits:</p>
+                                        <ul class="space-y-1 text-xs text-slate-600">
+                                            <li>• Max 1 tbsp Olive Oil</li>
+                                            <li>• 1/4 tsp Black Pepper</li>
+                                            <li>• 1/2 tsp Salt</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step-by-Step Culinary Method -->
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-3 flex items-center">
+                                    <i class="fas fa-utensils text-emerald-600 mr-2"></i>
+                                    Step-by-Step Culinary Method
+                                </h3>
+                                <ol class="space-y-3" id="cookingSteps">
+                                    <!-- Populated by JavaScript -->
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Footer -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+                        <button 
+                            onclick="copyRecipe()"
+                            class="flex-1 sm:flex-none px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all font-semibold flex items-center justify-center space-x-2 shadow-sm hover:shadow"
+                        >
+                            <i class="fas fa-copy"></i>
+                            <span>Copy Recipe</span>
+                        </button>
+                        <button 
+                            onclick="printRecipe()"
+                            class="flex-1 sm:flex-none px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-semibold flex items-center justify-center space-x-2 shadow-sm hover:shadow"
+                        >
+                            <i class="fas fa-print"></i>
+                            <span>Print PDF</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Load stats from localStorage
+        function loadStats() {
+            const foodRescued = localStorage.getItem('ecoBite_foodRescued') || '0.0';
+            const co2Avoided = localStorage.getItem('ecoBite_co2Avoided') || '0.0';
+            const moneySaved = localStorage.getItem('ecoBite_moneySaved') || '0.00';
+            const waterSaved = localStorage.getItem('ecoBite_waterSaved') || '0';
+            
+            document.getElementById('foodRescued').textContent = foodRescued + ' kg';
+            document.getElementById('co2Avoided').textContent = co2Avoided + ' kg CO2e';
+            document.getElementById('moneySaved').textContent = '$' + moneySaved;
+            document.getElementById('waterSaved').textContent = waterSaved + ' L';
+        }
+        
+        // Save stats to localStorage and update display
+        function updateStats() {
+            // Simulate saving random amounts per recipe
+            const currentFood = parseFloat(localStorage.getItem('ecoBite_foodRescued') || '0.0');
+            const currentCO2 = parseFloat(localStorage.getItem('ecoBite_co2Avoided') || '0.0');
+            const currentMoney = parseFloat(localStorage.getItem('ecoBite_moneySaved') || '0.00');
+            const currentWater = parseFloat(localStorage.getItem('ecoBite_waterSaved') || '0');
+            
+            const newFood = (currentFood + (Math.random() * 0.6 + 0.3)).toFixed(1);
+            const newCO2 = (currentCO2 + (Math.random() * 1.3 + 0.7)).toFixed(1);
+            const newMoney = (currentMoney + (Math.random() * 6 + 2)).toFixed(2);
+            const newWater = Math.round(currentWater + (Math.random() * 15 + 8));
+            
+            localStorage.setItem('ecoBite_foodRescued', newFood);
+            localStorage.setItem('ecoBite_co2Avoided', newCO2);
+            localStorage.setItem('ecoBite_moneySaved', newMoney);
+            localStorage.setItem('ecoBite_waterSaved', newWater);
+            
+            document.getElementById('foodRescued').textContent = newFood + ' kg';
+            document.getElementById('co2Avoided').textContent = newCO2 + ' kg CO2e';
+            document.getElementById('moneySaved').textContent = '$' + newMoney;
+            document.getElementById('waterSaved').textContent = newWater + ' L';
+        }
+        
+        // Fill preset ingredients
+        function fillPreset(ingredients) {
+            document.getElementById('ingredientsInput').value = ingredients;
+            const input = document.getElementById('ingredientsInput');
+            input.classList.add('ring-2', 'ring-amber-400');
+            setTimeout(() => {
+                input.classList.remove('ring-2', 'ring-amber-400');
+            }, 1000);
+        }
+        
+        // Draw canvas plating visualizer
+        function drawPlating() {
+            const canvas = document.getElementById('platingCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Plate
+            ctx.fillStyle = '#fef3c7';
+            ctx.beginPath();
+            ctx.ellipse(canvas.width/2, canvas.height/2 + 20, 150, 60, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Food items
+            const colors = ['#f59e0b', '#f97316', '#84cc16', '#22c55e', '#eab308'];
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.beginPath();
+                const angle = (i * Math.PI * 2) / 5;
+                const radius = 40 + (i % 2) * 15;
+                const x = canvas.width/2 + Math.cos(angle) * radius;
+                const y = canvas.height/2 + Math.sin(angle) * radius - 10;
+                ctx.arc(x, y, 15 + (i % 3) * 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#92400e';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+            
+            // Garnish
+            ctx.fillStyle = '#22c55e';
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(canvas.width/2 + (i-1)*20, canvas.height/2 - 60, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        // Generate recipe
+        function generateRecipe() {
+            const ingredientsInput = document.getElementById('ingredientsInput').value.trim();
+            
+            if (ingredientsInput === '') {
+                alert('Please enter some ingredients from your fridge!');
+                document.getElementById('ingredientsInput').focus();
+                return;
+            }
+            
+            // Show loading state
+            const btn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btnText.textContent = 'Creating AI Magic...';
+            btnSpinner.classList.remove('hidden');
+            
+            // Generate recipe after delay for effect
+            setTimeout(() => {
+                // Reset button
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btnText.textContent = 'Generate AI Zero-Waste Recipe';
+                btnSpinner.classList.add('hidden');
+                
+                // Get filters
+                const dietaryPref = document.getElementById('dietaryPref').value;
+                const expirationUrgency = document.getElementById('expirationUrgency').value;
+                
+                // Parse ingredients
+                const ingredients = ingredientsInput.split(',').map(i => i.trim()).filter(i => i);
+                
+                // Generate recipe based on ingredients
+                const recipes = generateRecipeContent(ingredients, dietaryPref, expirationUrgency);
+                
+                // Populate recipe output
+                document.getElementById('recipeTitle').textContent = recipes.title;
+                document.getElementById('recipeTime').textContent = recipes.time;
+                
+                // Update urgency badge
+                const urgencyBadge = document.getElementById('urgencyBadge').querySelector('span');
+                urgencyBadge.textContent = expirationUrgency;
+                
+                // Update macros
+                document.getElementById('calories').textContent = recipes.macros.calories;
+                document.getElementById('protein').textContent = recipes.macros.protein;
+                document.getElementById('carbs').textContent = recipes.macros.carbs;
+                document.getElementById('fats').textContent = recipes.macros.fats;
+                
+                // Populate ingredients list with capped quantities
+                const ingredientsList = document.getElementById('ingredientsList');
+                ingredientsList.innerHTML = '';
+                recipes.ingredientsList.forEach(ing => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start space-x-2 text-sm';
+                    li.innerHTML = `
+                        <i class="fas fa-check-circle text-emerald-600 mt-0.5 flex-shrink-0"></i>
+                        <span class="text-slate-700">${ing}</span>
+                    `;
+                    ingredientsList.appendChild(li);
+                });
+                
+                // Populate storage tip
+                document.getElementById('storageTip').textContent = recipes.storageTip;
+                
+                // Populate cooking steps
+                const cookingSteps = document.getElementById('cookingSteps');
+                cookingSteps.innerHTML = '';
+                recipes.steps.forEach((step, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'flex space-x-3';
+                    li.innerHTML = `
+                        <div class="flex-shrink-0 w-7 h-7 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                            ${index + 1}
+                        </div>
+                        <p class="text-slate-700 pt-0.5 leading-relaxed text-sm">${step}</p>
+                    `;
+                    cookingSteps.appendChild(li);
+                });
+                
+                // Draw canvas
+                drawPlating();
+                
+                // Show recipe output section
+                const recipeOutput = document.getElementById('recipeOutput');
+                recipeOutput.classList.remove('hidden');
+                
+                // Scroll smoothly to recipe output
+                recipeOutput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                // Update stats
+                updateStats();
+                
+            }, 1500);
+        }
+        
+        // Generate recipe content based on ingredients
+        function generateRecipeContent(ingredients, dietaryPref, expirationUrgency) {
+            const lowerIngredients = ingredients.map(i => i.toLowerCase());
+            
+            // Recipe templates based on common combinations
+            if (lowerIngredients.some(i => i.includes('bread')) && lowerIngredients.some(i => i.includes('egg'))) {
+                return {
+                    title: "Artisanal Skillet Toast Frittata",
+                    time: "12 Mins",
+                    macros: {
+                        calories: "385 kcal",
+                        protein: "22g",
+                        carbs: "28g",
+                        fats: "19g"
+                    },
+                    ingredientsList: [
+                        ...ingredients.map(i => `• ${i.charAt(0).toUpperCase() + i.slice(1)} (rescued)`),
+                        "• Max 1 tbsp Olive Oil",
+                        "• 1/4 tsp Black Pepper",
+                        "• 1/2 tsp Salt"
+                    ],
+                    storageTip: "Refrigerate in airtight containers for up to 4 days. Reheat in a skillet for 5-7 minutes for best texture and flavor.",
+                    steps: [
+                        "Whisk eggs with a pinch of salt and pepper in a large bowl.",
+                        "Cube the bread into small pieces and soak in the egg mixture for 3-4 minutes.",
+                        "Heat a non-stick skillet over medium heat with olive oil.",
+                        "Pour the mixture into the skillet, spreading evenly.",
+                        "Cook for 3-4 minutes until edges set, then add cheese if available.",
+                        "Finish under broiler for 2-3 minutes until golden and puffed.",
+                        "Slice and serve hot - garnish with fresh herbs if available!"
+                    ]
+                };
+            } else if (lowerIngredients.some(i => i.includes('rice'))) {
+                return {
+                    title: "Rustic Golden Fried Rice",
+                    time: "15 Mins",
+                    macros: {
+                        calories: "340 kcal",
+                        protein: "16g",
+                        carbs: "42g",
+                        fats: "12g"
+                    },
+                    ingredientsList: [
+                        ...ingredients.map(i => `• ${i.charAt(0).toUpperCase() + i.slice(1)} (rescued)`),
+                        "• Max 1 tbsp Olive Oil",
+                        "• 1/4 tsp Black Pepper",
+                        "• 1/2 tsp Salt"
+                    ],
+                    storageTip: "Store in refrigerator for up to 5 days in sealed containers. For meal prep, freeze for up to 3 months. Reheat with a splash of water.",
+                    steps: [
+                        "Use day-old rice if possible - spread on a tray to dry for 10 minutes.",
+                        "Scramble eggs in a large wok over high heat, remove and set aside.",
+                        "Stir-fry vegetables and proteins for 1-2 minutes.",
+                        "Add rice, breaking up clumps. Toss vigorously for 2-3 minutes.",
+                        "Push to side, add sauce, mix everything together.",
+                        "Add eggs back in, toss for another minute.",
+                        "Plate hot and enjoy your flavorful creation!"
+                    ]
+                };
+            } else if (lowerIngredients.some(i => i.includes('banana')) || lowerIngredients.some(i => i.includes('oat'))) {
+                return {
+                    title: "Fluffy Banana Oat Pancakes",
+                    time: "12 Mins",
+                    macros: {
+                        calories: "290 kcal",
+                        protein: "12g",
+                        carbs: "38g",
+                        fats: "10g"
+                    },
+                    ingredientsList: [
+                        ...ingredients.map(i => `• ${i.charAt(0).toUpperCase() + i.slice(1)} (rescued)`),
+                        "• Max 1 tbsp Olive Oil",
+                        "• 1/4 tsp Black Pepper",
+                        "• 1/2 tsp Salt"
+                    ],
+                    storageTip: "These freeze beautifully! Stack with parchment between each pancake, freeze up to 3 months. Toast directly from frozen.",
+                    steps: [
+                        "Mash bananas until smooth in a large mixing bowl.",
+                        "Add oats, eggs, and a pinch of cinnamon. Mix well.",
+                        "Let batter rest for 5-7 minutes to thicken.",
+                        "Heat non-stick pan over medium-low heat with oil.",
+                        "Pour 1/4 cup batter per pancake, cook until bubbles form (2-3 min).",
+                        "Flip and cook until golden brown (1-2 more min).",
+                        "Stack high, drizzle with honey, and savor every bite!"
+                    ]
+                };
+            } else if (lowerIngredients.some(i => i.includes('veg'))) {
+                return {
+                    title: "Hearty Roasted Veggie Hash",
+                    time: "20 Mins",
+                    macros: {
+                        calories: "215 kcal",
+                        protein: "10g",
+                        carbs: "24g",
+                        fats: "9g"
+                    },
+                    ingredientsList: [
+                        ...ingredients.map(i => `• ${i.charAt(0).toUpperCase() + i.slice(1)} (rescued)`),
+                        "• Max 1 tbsp Olive Oil",
+                        "• 1/4 tsp Black Pepper",
+                        "• 1/2 tsp Salt"
+                    ],
+                    storageTip: "Store in refrigerator for up to 4 days. Reheat in a skillet with a touch of oil for crispy results.",
+                    steps: [
+                        "Dice vegetables into small, uniform cubes.",
+                        "Heat large skillet over medium-high heat with oil.",
+                        "Cook harder vegetables first (potatoes, carrots) for 8-10 minutes.",
+                        "Add softer vegetables, cook 3-5 more minutes.",
+                        "Create wells, crack eggs in if desired, cover 2-3 minutes.",
+                        "Season generously and cook until crispy edges form.",
+                        "Serve hot straight from the skillet!"
+                    ]
+                };
+            } else {
+                // Generic recipe for any ingredients
+                return {
+                    title: "Creative Zero-Waste Kitchen Medley",
+                    time: "20 Mins",
+                    macros: {
+                        calories: "275 kcal",
+                        protein: "14g",
+                        carbs: "26g",
+                        fats: "13g"
+                    },
+                    ingredientsList: [
+                        ...ingredients.map(i => `• ${i.charAt(0).toUpperCase() + i.slice(1)} (rescued)`),
+                        "• Max 1 tbsp Olive Oil",
+                        "• 1/4 tsp Black Pepper",
+                        "• 1/2 tsp Salt"
+                    ],
+                    storageTip: "Store in airtight containers in the refrigerator for up to 4 days. Reheat thoroughly before consuming. Freeze for up to 2 months.",
+                    steps: [
+                        "Prep all ingredients - chop, dice, or slice as needed.",
+                        "Heat your pan or pot over medium heat with a splash of cooking oil.",
+                        "Sauté aromatics first if available, then add proteins.",
+                        "Add vegetables in order of cooking time - hardest first.",
+                        "Stir frequently to prevent burning and ensure even cooking.",
+                        "Taste and adjust seasoning with salt, pepper, and herbs.",
+                        "Let flavors meld for 2-3 more minutes, plate and enjoy!"
+                    ]
+                };
+            }
+        }
+        
+        // Copy recipe to clipboard
+        function copyRecipe() {
+            const title = document.getElementById('recipeTitle').textContent;
+            const time = document.getElementById('recipeTime').textContent;
+            const urgency = document.getElementById('urgencyBadge').querySelector('span').textContent;
+            const ingredients = Array.from(document.querySelectorAll('#ingredientsList li span'))
+                .map(span => '- ' + span.textContent)
+                .join('\n');
+            const storageTip = document.getElementById('storageTip').textContent;
+            const steps = Array.from(document.querySelectorAll('#cookingSteps li p'))
+                .map((p, i) => (i + 1) + '. ' + p.textContent)
+                .join('\n');
+            const calories = document.getElementById('calories').textContent;
+            const protein = document.getElementById('protein').textContent;
+            const carbs = document.getElementById('carbs').textContent;
+            const fats = document.getElementById('fats').textContent;
+            
+            const recipeText = `ECOBITE - AI ZERO-WASTE KITCHEN ASSISTANT\n${'='.repeat(50)}\n\n` +
+                `Recipe: ${title}\n` +
+                `Prep Time: ${time}\n` +
+                `Expiration Urgency: ${urgency}\n\n` +
+                `MACRO-NUTRITION:\n` +
+                `  Calories: ${calories} | Protein: ${protein} | Carbs: ${carbs} | Fats: ${fats}\n\n` +
+                `INGREDIENTS & QUANTITIES:\n${ingredients}\n\n` +
+                `SMART STORAGE & SHELF-LIFE TIP:\n${storageTip}\n\n` +
+                `STEP-BY-STEP METHOD:\n${steps}\n\n` +
+                `${'='.repeat(50)}\n` +
+                `Made with EcoBite - AI Zero-Waste Kitchen Assistant\n` +
+                `Helping achieve UN SDG 12: Responsible Consumption & Production\n` +
+                `🌱 Every recipe helps rescue food and reduce waste!`;
+            
+            navigator.clipboard.writeText(recipeText).then(() => {
+                alert('Recipe copied to clipboard! 📝');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = recipeText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('Recipe copied to clipboard! 📝');
+            });
+        }
+        
+        // Print recipe
+        function printRecipe() {
+            const printWindow = window.open('', '_blank');
+            const title = document.getElementById('recipeTitle').textContent;
+            const time = document.getElementById('recipeTime').textContent;
+            const urgency = document.getElementById('urgencyBadge').querySelector('span').textContent;
+            const ingredients = Array.from(document.querySelectorAll('#ingredientsList li span'))
+                .map(span => '• ' + span.textContent)
+                .join('\n');
+            const storageTip = document.getElementById('storageTip').textContent;
+            const steps = Array.from(document.querySelectorAll('#cookingSteps li p'))
+                .map((p, i) => i + 1 + '. ' + p.textContent)
+                .join('\n\n');
+            const calories = document.getElementById('calories').textContent;
+            const protein = document.getElementById('protein').textContent;
+            const carbs = document.getElementById('carbs').textContent;
+            const fats = document.getElementById('fats').textContent;
+            
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>${title} - EcoBite Recipe</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; max-width: 800px; margin: 0 auto; padding: 30px; line-height: 1.7; color: #1e293b; }
+                        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #059669; }
+                        .header h1 { color: #059669; font-size: 28px; margin-bottom: 8px; }
+                        .header .subtitle { color: #64748b; font-size: 14px; }
+                        .recipe-title { font-size: 24px; font-weight: bold; color: #0f172a; margin: 20px 0 10px 0; }
+                        .badges { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 20px 0; }
+                        .badge { background: #ecfdf5; color: #065f46; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+                        .macros { background: linear-gradient(90deg, #ecfdf5 0%, #f0fdf4 100%); padding: 15px; border-radius: 10px; margin: 20px 0; border: 1px solid #a7f3d0; }
+                        .macros-title { font-weight: bold; color: #065f46; margin-bottom: 10px; font-size: 14px; }
+                        .macros-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+                        .macro-item .label { font-size: 11px; color: #64748b; }
+                        .macro-item .value { font-size: 16px; font-weight: bold; color: #059669; }
+                        h2 { color: #0f172a; margin: 25px 0 12px 0; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+                        .section { margin: 20px 0; }
+                        ul, ol { padding-left: 20px; }
+                        li { margin: 8px 0; color: #334155; }
+                        .storage-tip { background: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; margin: 15px 0; border-radius: 4px; color: #92400e; }
+                        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #e2e8f0; color: #64748b; font-size: 13px; }
+                        .footer p { margin: 5px 0; }
+                        @media print {
+                            body { padding: 15px; }
+                            .header { margin-bottom: 20px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🌱 EcoBite</h1>
+                        <p class="subtitle">AI Zero-Waste Kitchen Assistant</p>
+                    </div>
+                    
+                    <h1 class="recipe-title">${title}</h1>
+                    <div class="badges">
+                        <span class="badge">⏱️ ${time}</span>
+                        <span class="badge">⚠️ ${urgency}</span>
+                    </div>
+                    
+                    <div class="macros">
+                        <div class="macros-title">📊 Macro-Nutrition Estimate</div>
+                        <div class="macros-grid">
+                            <div class="macro-item">
+                                <div class="label">Calories</div>
+                                <div class="value">${calories}</div>
+                            </div>
+                            <div class="macro-item">
+                                <div class="label">Protein</div>
+                                <div class="value">${protein}</div>
+                            </div>
+                            <div class="macro-item">
+                                <div class="label">Carbs</div>
+                                <div class="value">${carbs}</div>
+                            </div>
+                            <div class="macro-item">
+                                <div class="label">Healthy Fats</div>
+                                <div class="value">${fats}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>🥘 Verified Ingredients & Capped Quantities</h2>
+                        <ul>${ingredients.split('\n').map(i => '<li>' + i.substring(2) + '</li>').join('')}</ul>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>💡 Smart Storage & Shelf-Life Tip</h2>
+                        <div class="storage-tip">${storageTip}</div>
+                    </div>
+                    
+                    <div class="section">
+                        <h2>👨‍🍳 Step-by-Step Culinary Method</h2>
+                        <ol>${steps.split('\n\n').map(s => '<li>' + s.substring(3) + '</li>').join('')}</ol>
+                    </div>
+                    
+                    <div class="footer">
+                        <p><strong>EcoBite - AI Zero-Waste Kitchen Assistant</strong></p>
+                        <p>Helping achieve UN SDG 12: Responsible Consumption & Production</p>
+                        <p>🌍 Every recipe helps rescue food and protect our planet!</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 250);
+        }
+        
+        // Initialize stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            drawPlating();
+        });
+    </script>
+</body>
+</html>
